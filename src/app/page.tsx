@@ -1,8 +1,10 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import 'bootswatch/dist/materia/bootstrap.min.css';
 import FilesBox from '@/components/filesBox';
 import NavBar from '@/components/navBar';
+import StateContext from '@/services/stateContext';
+import Alert from '@/components/alerts';
 
 const BASE_URL = 'http://localhost:5000/'
 const UPLOAD_FILE_URL = new URL('upload-results', BASE_URL)
@@ -13,11 +15,11 @@ interface dataForm {
 }
 
 const Home: React.FC = () => {
-  const [dataForm, setDataForm] = useState<dataForm>({});
+  const [dataForm, setDataForm] = useState<dataForm | undefined>({});
   const [textoAlerta, setTextoAlerta] = useState<string>();
   const [mostrarAlertaCambios, setMostrarAlertaCambios] = useState<string>('d-none')
   const [typeAlert, setTypeAlert] = useState<string>();
-  const [whoResponse, setWhoResponse] = useState<string>()
+  const [whoResponse, setWhoResponse] = useState<string>();
 
   useEffect(() => {
     document.body.style.overflowX = 'hidden';
@@ -34,10 +36,10 @@ const Home: React.FC = () => {
       setDataForm((prevDataForm) => ({ ...prevDataForm, file: files[0] }))
   }
 
-  const emptyDataAlert = () => {
+  const emptyDataAlert = (text: string) => {
     setMostrarAlertaCambios('')
     setTypeAlert('alert-warning')
-    setTextoAlerta("No puedes dejar vacío el campo de archivos")
+    setTextoAlerta(text)
     setWhoResponse('Respuesta del cliente!!!')
   }
 
@@ -70,6 +72,11 @@ const Home: React.FC = () => {
     warnAlert(text);
   }
 
+  const handleOnClose = () => {
+    setMostrarAlertaCambios('d-none')
+    setDataForm(undefined)
+  }
+
   const handleUploadSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -77,25 +84,29 @@ const Home: React.FC = () => {
       let data: string = "";
       let decition = true;
 
+      if (!dataForm) {
+        emptyDataAlert("No puedes dejar el formulario vacío, llena el campo de archivos.");
+        return
+      }
       if (!dataForm.file) {
         decition = false;
-        emptyDataAlert();
+        emptyDataAlert("No puedes dejar vacío el campo de archivos");
         return;
       }
-      
+
       if (dataForm.title)
         formData.append('title', dataForm.title);
       else {
         decition = confirm("El título del archivo será el mismo que se lea en el archivo de subida. ¿Deseas continuar?")
       }
-      
+
       if (!decition) {
         warnAlert("Proceso cancelado.")
         return;
       }
-      
+
       successAlert("Esto podría tomar un  tiempo...")
-      
+
       formData.append('file', dataForm.file);
 
       const response = await fetch(UPLOAD_FILE_URL, {
@@ -127,17 +138,16 @@ const Home: React.FC = () => {
     <>
       <NavBar />
       <div style={{ width: "100%", height: '100vh', backgroundColor: "white" }}>
-        
+
         <div style={{ margin: 10, display: 'flex' }}>
           <div className="container">
             <form onSubmit={handleUploadSubmit}>
               <fieldset>
-                <div className="container">
-                  <div className={`alert alert-dismissible ${typeAlert} ${mostrarAlertaCambios}`}>
-                    <button type="button" className="btn-close" onClick={() => { setMostrarAlertaCambios("d-none") }}></button>
-                    <strong>{whoResponse}</strong> {textoAlerta}
-                  </div>
-                </div>
+                <Alert typeAlert={typeAlert!}
+                  mostrarAlertaCambios={mostrarAlertaCambios!}
+                  handleOnClose={handleOnClose}
+                  textoAlerta={textoAlerta!}
+                  whoResponse={whoResponse!} />
                 <div>
                   <legend>Inserta archivo en formato CSV</legend>
                   <div className='row' style={{ marginBottom: 20 }}>

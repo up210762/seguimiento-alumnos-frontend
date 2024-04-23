@@ -22,6 +22,8 @@ const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
         const data = await response.json();
         setFiles(data);
         setPath("input-files");
+        console.log(data);
+
     }
 
     const chargeGeneratedFiles = async () => {
@@ -30,6 +32,7 @@ const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
         const data = await response.json();
         setFiles(data);
         setPath("output-files");
+        console.log(data);
     }
 
     useEffect(() => {
@@ -49,13 +52,17 @@ const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
         return;
 
     const handleDeleteFile = async (file: string) => {
+        const confirmation = confirm("Estas seguro de querer borrarlo?");
+        if (!confirmation)
+            return;
+
         const res = await deleteFile(file, path);
         if (!res.ok)
             warnAlert("No hay archivo por eliminar.");
         successAlert("Archivo eliminado con éxito.");
-        if (title === "Archivos cargados") {
+        if (type === 1) {
             chargeLoadFiles();
-        } else if (title === "Archivos generados") {
+        } else if (type === 2) {
             chargeGeneratedFiles();
         }
     }
@@ -79,7 +86,7 @@ const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
                             onClick={() => handleDeleteFile(file)}></img>
                     </div>
                     <div className="container">
-                        <a href={`http://localhost:5000/download/${file}`}>
+                        <a href={`http://localhost:5000/download/${path}/${file}`}>
                             <img
                                 src="/descargas.png"
                                 style={imagenStyle}></img>
