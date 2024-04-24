@@ -1,50 +1,50 @@
 import React, { useEffect, useState } from "react";
 import deleteFile from "@/services/deleteFile";
 
-
-
 interface Files {
     type: number
     files: string[]
-    path: string
-    title: string
     successAlert: (text: string) => void
     warnAlert: (text: string) => void
-    chargeLoadFiles: ()=>void
-    chargeGeneratedFiles:()=>void
+    chargeLoadFiles: () => void
+    chargeGeneratedFiles: () => void
 }
 
-const FilesBox: React.FC<Files> = ({ type, files, path, title, chargeLoadFiles, chargeGeneratedFiles, successAlert, warnAlert }) => {
+const FilesBox: React.FC<Files> = ({ type, files, chargeLoadFiles, chargeGeneratedFiles, successAlert, warnAlert }) => {
+    const [path, setPath] = useState<string>()
+    const [title, setTitle] = useState<string>()
 
     useEffect(() => {
         if (type === 1) {
+            setTitle("Archivos cargados");
             chargeLoadFiles();
+            setPath("input-files");
         }
         else if (type === 2) {
-            chargeGeneratedFiles()
+            setTitle("Archivos generados");
+            chargeGeneratedFiles();
+            setPath("output-files");
         }
-
     }, [])
-
-    if (!files)
-        return;
-
-    if (!path)
-        return;
 
     const handleDeleteFile = async (file: string) => {
         const confirmation = confirm("Estas seguro de querer borrarlo?");
         if (!confirmation)
             return;
 
-        const res = await deleteFile(file, path);
+        if (!path)
+            return
+
+        const res = await deleteFile(file, path!);
         if (!res.ok)
             warnAlert("No hay archivo por eliminar.");
         successAlert("Archivo eliminado con éxito.");
         if (type === 1) {
             chargeLoadFiles();
+            setPath("input-files");
         } else if (type === 2) {
             chargeGeneratedFiles();
+            setPath("output-files");
         }
     }
 
