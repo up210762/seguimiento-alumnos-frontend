@@ -8,6 +8,8 @@ import Alert from '@/components/alerts';
 
 const BASE_URL = 'http://localhost:5000/'
 const UPLOAD_FILE_URL = new URL('upload-results', BASE_URL)
+const uploadedFilesURL = new URL('get-upload-files', BASE_URL);
+const generatedPath = new URL('get-generated-files', BASE_URL);
 
 interface dataForm {
   title?: string | null
@@ -20,6 +22,26 @@ const Home: React.FC = () => {
   const [mostrarAlertaCambios, setMostrarAlertaCambios] = useState<string>('d-none')
   const [typeAlert, setTypeAlert] = useState<string>();
   const [whoResponse, setWhoResponse] = useState<string>();
+  const [click, setClick] = useState<boolean>(false);
+  const [files, setFiles] = useState<string[]>([]);
+  const [title, setTitle] = useState<string>()
+  const [path, setPath] = useState<string>()
+
+  const chargeLoadFiles = async () => {
+    setTitle("Archivos cargados");
+    const response = await fetch(uploadedFilesURL);
+    const data = await response.json();
+    setFiles(data);
+    setPath("input-files");
+  }
+
+  const chargeGeneratedFiles = async () => {
+    setTitle("Archivos generados");
+    const response = await fetch(generatedPath);
+    const data = await response.json();
+    setFiles(data);
+    setPath("output-files");
+  }
 
   useEffect(() => {
     document.body.style.overflowX = 'hidden';
@@ -70,6 +92,11 @@ const Home: React.FC = () => {
 
   const deleteFailAlert = (text: string) => {
     warnAlert(text);
+  }
+
+  const handleOnAdd = (func: () => void) => {
+    func();
+    return;
   }
 
   const handleOnClose = () => {
@@ -125,7 +152,8 @@ const Home: React.FC = () => {
         successAlert(data)
         formData.delete('title')
         formData.delete('files')
-
+        await chargeGeneratedFiles()
+        await chargeGeneratedFiles()
       }
     } catch (error) {
       setWhoResponse('Respuesta del cliente!!!')
@@ -176,8 +204,24 @@ const Home: React.FC = () => {
               </fieldset>
             </form>
           </div>
-          <FilesBox type={1} successAlert={deleteAlert} warnAlert={deleteFailAlert} />
-          <FilesBox type={2} successAlert={deleteAlert} warnAlert={deleteFailAlert} />
+          <FilesBox 
+          type={1} 
+          chargeGeneratedFiles={chargeGeneratedFiles}
+          chargeLoadFiles={chargeLoadFiles}
+          files={files}
+          path={path!}
+          title={title!} 
+          successAlert={deleteAlert} 
+          warnAlert={deleteFailAlert} />
+          <FilesBox 
+          type={2} 
+          chargeGeneratedFiles={chargeGeneratedFiles}
+          chargeLoadFiles={chargeLoadFiles}
+          files={files}
+          path={path!}
+          title={title!} 
+          successAlert={deleteAlert} 
+          warnAlert={deleteFailAlert} />
         </div>
       </div>
     </>

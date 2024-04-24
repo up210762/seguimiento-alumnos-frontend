@@ -1,39 +1,20 @@
 import React, { useEffect, useState } from "react";
 import deleteFile from "@/services/deleteFile";
 
-const BASE_URL = 'http://localhost:5000/';
-const uploadedFilesURL = new URL('get-upload-files', BASE_URL);
-const generatedPath = new URL('get-generated-files', BASE_URL);
+
 
 interface Files {
-    type: number,
+    type: number
+    files: string[]
+    path: string
+    title: string
     successAlert: (text: string) => void
     warnAlert: (text: string) => void
+    chargeLoadFiles: ()=>void
+    chargeGeneratedFiles:()=>void
 }
 
-const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
-    const [files, setFiles] = useState<string[]>([]);
-    const [title, setTitle] = useState<string>()
-    const [path, setPath] = useState<string>()
-
-    const chargeLoadFiles = async () => {
-        setTitle("Archivos cargados");
-        const response = await fetch(uploadedFilesURL);
-        const data = await response.json();
-        setFiles(data);
-        setPath("input-files");
-        console.log(data);
-
-    }
-
-    const chargeGeneratedFiles = async () => {
-        setTitle("Archivos generados");
-        const response = await fetch(generatedPath);
-        const data = await response.json();
-        setFiles(data);
-        setPath("output-files");
-        console.log(data);
-    }
+const FilesBox: React.FC<Files> = ({ type, files, path, title, chargeLoadFiles, chargeGeneratedFiles, successAlert, warnAlert }) => {
 
     useEffect(() => {
         if (type === 1) {
@@ -67,7 +48,6 @@ const FilesBox: React.FC<Files> = ({ type, successAlert, warnAlert }) => {
         }
     }
 
-    const handleAddFile = async () => {}
 
     return (
         <div className="container">
